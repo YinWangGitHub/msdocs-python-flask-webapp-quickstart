@@ -26,7 +26,21 @@ def hello():
    else:
        print('Request for hello page received with no name or blank name -- redirecting')
        return redirect(url_for('index'))
+   
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file:
+            filepath = "./uploads/" + file.filename
+            file.save(filepath)
+            return 'File uploaded and saved.'
+    
+    return '''
+    <!doctype html>
+    <!-- your existing HTML content -->
+    '''
 
 
 if __name__ == '__main__':
-   app.run()
+   app.run(debug=True)

@@ -70,6 +70,20 @@ def index_post():
    
  )
 
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file:
+            filepath = "./uploads/" + file.filename
+            file.save(filepath)
+            return 'File uploaded and saved.'
+    
+    return '''
+    <!doctype html>
+    <!-- your existing HTML content -->
+    '''
+
 
 
 if __name__ == '__main__':

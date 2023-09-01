@@ -215,15 +215,19 @@ footer .socials a ion-icon{
 			<!-- <span id="themeSwitcher"><ion-icon name="sunny-outline"></ion-icon></span> -->
                     <main>
                         <p>Enter the text you wish to translate, choose the language, and click Translate!</p>
-                        <form method="POST" enctype="multipart/form-data">
+                        <form method="POST">
                             <!-- Form content here -->
                 		<div class="form__row text">
                 		    <label for="text">Text</label>
 				    <textarea name="text" class="form-control" placeholder="Enter the text">{{ original_text }}</textarea>
                 		</div>
+
                 		<div class="upload-file-row">
-					<input type="file" name="file" class="form-control" style="width:75%">
-					<button type="button" class="btn btn-success mr-2">Upload File</button>
+					<!-- <button type="button" class="btn btn-success mr-2">Upload File</button> -->
+					<!-- <input type="file" class="form-control" style="width:100%" accept=".xls,.doc,.txt,.pdf,.csv"> -->
+					<label for="fileInput" class="btn btn-success mr-2">Upload File</label>
+					<input type="text" id="filePath" style="width: 70%;" name="file_path"> 
+					<input type="file" id="fileInput" style="display:none;"> 
                 		</div>
                 		<div class="form__row target">
                 		    <label for="language">Target language:</label>
@@ -286,9 +290,16 @@ footer .socials a ion-icon{
                         	    <!-- Form content here -->
                 			<div class="form__row text">
                 			    <label for="text">Text</label>
-					    <textarea name="text" class="form-control" placeholder="Translate Results">{{ translated_text }}</textarea>
+					    <textarea name="text" class="form-control" placeholder="Traslate Results">{{ translated_text }}</textarea>
+					    <label type="text" id="download_path" style="display:none;">{{ download_path }}</label> 
+                        		    <p>Translated document download Link </p>
+					    <a href="{{ download_path }}" id="downloadLink" >{{ download_path }}</a>
                 			</div>
                         	</form>
+					<div class="down-file-row" style="display: none;">
+					    <input type="text" id="downPath" style="width: 70%;" name="down_path">
+					    <a href="#" id="downloadLink" class="btn btn-success mr-2" style="display: none;">Download File</a>
+					</div>
                     </main>
                 </div>
             </div>
@@ -300,56 +311,59 @@ footer .socials a ion-icon{
 
 
     <script>
-        const themeSwitcher = document.getElementById("themeSwitcher")
-        const body = document.getElementById("body")
 
-        themeSwitcher.addEventListener("click", (e) => {
-            if(e.target.name === "sunny-outline"){
-                e.target.name = "moon"
-                body.classList.add("light")
-                body.classList.remove("dark")
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        var selectedFile = e.target.files[0]; // 获取选择的文件
 
-            } else {
-                console.log("change to sun-light")
-                e.target.name = "sunny-outline"
-                body.classList.add("dark")
-                body.classList.remove("light")
-            }
-        })
+        if (selectedFile) {
+            // 创建 FormData 对象
+            var formData = new FormData();
+            formData.append('file', selectedFile);
 
-
-    // 当页面加载时，尝试从 Cookie 中获取之前保存的语言选择
-    window.onload = function() {
-        var previousLanguage = getCookie("previous_language");
-        if (previousLanguage) {
-            document.querySelector("#language").value = previousLanguage;
+            // 发起 POST 请求到后端（您的上传文件逻辑）
+            fetch('/uploadFile', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Upload response:', data);
+               	
+	       	const file_path = data.file_path;	
+		document.getElementById('filePath').value = file_path ;
+                // 文件上传成功后，您可以在此处进行翻译的请求
+                // 您可以使用 fetch 或其他方法发送翻译请求
+                // 在获取翻译结果后，更新 translated_text 文本区域
+                var translatedTextArea = document.querySelector('[name="text"]');
+                translatedTextArea.value = data.translatedText; // 假设您的服务器返回了翻译结果
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+            });
         }
-    };
+    });
 
-    // 保存用户选择的语言到 Cookie
-    function saveLanguage() {
-        var selectedLanguage = document.querySelector("#language").value;
-        setCookie("previous_language", selectedLanguage, 30); // 保存 30 天
+    // 获取相关元素
+    var downFileRow = document.querySelector('.down-file-row');
+    var downPathInput = document.getElementById('downPath');
+    var downloadLink = document.getElementById('downloadLink');
+
+    // 检查 {{ download_file }} 是否为空
+    var downloadFile = document.getElementById('download_path').value; // 这里替换为实际的变量值
+
+    if (downloadFile) {
+        // 如果 download_file 不为空，则显示 down-file-row
+        downFileRow.style.display = 'block';
+
+        // 填充文件路径到输入框
+        downPathInput.value = downloadFile;
+
+        // 为下载链接设置 href 属性
+        downloadLink.href = downloadFile;
+
+        // 显示下载链接
+        downloadLink.style.display = 'inline-block';
     }
-
-    // 获取 Cookie 值
-    function getCookie(name) {
-        var value = "; " + document.cookie;
-        var parts = value.split("; " + name + "=");
-        if (parts.length === 2) return parts.pop().split(";").shift();
-    }
-
-    // 设置 Cookie 值
-    function setCookie(name, value, days) {
-        var expires = "";
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/";
-    }
-
 
     </script>
 </body>

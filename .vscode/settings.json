@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/81b79982-34c7-4b80-bea7-3e2c70240a7c/resourceGroups/appsvc_linux_centralus_basic/providers/Microsoft.Web/sites/DGWTrans",
+    "appService.deploySubpath": "."
+}

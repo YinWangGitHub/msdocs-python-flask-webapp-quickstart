@@ -243,7 +243,13 @@ def translate_doc(file_path,target_language):
             "targets": [
                 {
                     "targetUrl": target_container_sas_url,
-                    "language": target_language
+                    "language": target_language,
+                    "glossaries": [
+                        {
+                            "glossaryUrl": "https://rawdocuments32.blob.core.windows.net/dgwglossary/Translation Glossary NEW.tsv",
+                            "format": "tsv"
+                        }
+                    ]
                 }
             ]
         }
@@ -297,8 +303,12 @@ def translate_doc(file_path,target_language):
 
 if __name__ == '__main__':
         #print jdata
-  app.run(host="0.0.0.0",port=5001,debug=True)
+#   app.run(host="0.0.0.0",port=5001,debug=True)
     
+    app.run(
+    debug=True, passthrough_errors=True,
+    use_debugger=False, use_reloader=False
+)
 
 
 

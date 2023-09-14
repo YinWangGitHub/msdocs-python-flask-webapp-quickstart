@@ -74,7 +74,12 @@ def index_post():
         params = {
             'api-version': '3.0',
             #'from': ,
-            'to': target_language
+            'to': target_language,
+            "glossaries": [
+                        {                 
+                            "glossaryUrl": "https://my.blob.core.windows.net/glossaries/en-fr.tsv",
+                            "format": "tsv"
+                        }]
         }
 
         # Create the body of the request with the text to be translated
@@ -243,7 +248,12 @@ def translate_doc(file_path,target_language):
             "targets": [
                 {
                     "targetUrl": target_container_sas_url,
-                    "language": target_language
+                    "language": target_language,
+                    "glossaries": [
+                        {   "glossaryUrl": "https://my.blob.core.windows.net/glossaries/en-fr.tsv",
+                            "format": "tsv"
+                        }
+                    ]
                 }
             ]
         }

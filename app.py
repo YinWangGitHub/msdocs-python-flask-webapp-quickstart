@@ -297,7 +297,7 @@ def translate_doc(file_path,target_language):
 
 if __name__ == '__main__':
         #print jdata
-  app.run(host="0.0.0.0",port=5001,debug=True)
+  app.run(host="0.0.0.0",port=5005,debug=True)
     
 
 

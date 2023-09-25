@@ -13,9 +13,6 @@ LOCATION= "eastus"
 
 STORAGE_ACCOUNT_NAME = "rawdocuments32"
 STORAGE_ACCOUNT_KEY = "ctz5hA3R9CZJYy7Z/QNeaLf0owB6nO6Bp3BPIWS3LPty+DOVGuHStxerPukMH2K+TXeOHr1S8yMb+AStPjvMfA=="
-
-connecting_string = "DefaultEndpointsProtocol=https;AccountName=rawdocuments32;AccountKey=ctz5hA3R9CZJYy7Z/QNeaLf0owB6nO6Bp3BPIWS3LPty+DOVGuHStxerPukMH2K+TXeOHr1S8yMb+AStPjvMfA==;EndpointSuffix=core.windows.net"
-
 STORAGE_ENDPOINT = f"https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/" 
 
 
@@ -31,29 +28,21 @@ glossary_container_name = "dgwglossary"
 
 
 def generate_sas_url(container,blob_name):
-
-    # sas_token = generate_container_sas(
-    #     account_name=STORAGE_ACCOUNT_NAME,
-    #     container_name=container.container_name,
-    #     account_key=STORAGE_ACCOUNT_KEY,
-    #     permission=permissions,
-    #     expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    # )
     
     sas_token = generate_blob_sas(
         container_name=container.container_name,
         blob_name=blob_name,
         account_name=STORAGE_ACCOUNT_NAME, 
-        account_key=STORAGE_ACCOUNT_KEY, permission=BlobSasPermissions(read=True, write=True), 
+        account_key=STORAGE_ACCOUNT_KEY, 
+        permission=BlobSasPermissions(read=True, write=True), 
         expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     )
     
 
     container_sas_url = STORAGE_ENDPOINT + container.container_name + "/" + blob_name +"?" + sas_token
-    print(container_sas_url)
-    #container_sas_url = STORAGE_ENDPOINT + container.container_name  +"?" + sas_token
-    print(f"Generating {container.container_name} SAS URL")
+    print(f"Generating {container.container_name} SAS URL:", container_sas_url)
     return container_sas_url
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -68,11 +57,6 @@ def index_post():
     original_text = request.form['text']
     target_language = request.form['language']
     file_path = request.form['file_path']
-
-    ### Load the values from .env
-    ##key = os.environ['KEY']
-    ##endpoint = os.environ['ENDPOINT']
-    ##location = os.environ['LOCATION']
 
     key = KEY
     endpoint = ENDPOINT
@@ -91,7 +75,7 @@ def index_post():
             )
 
     else :
-        glossary_container_sas_url = generate_sas_url(glossary_container, "ConfiguredGlossary.tsv")
+        glossary_container_sas_url = generate_sas_url(glossary_container, "FinalGlossary.tsv")
         
         # Indicate that we want to translate and the API version (3.0) and the target language
         path = '/translate?api-version=3.0'
@@ -109,7 +93,6 @@ def index_post():
         }
         params = {
             'api-version': '3.0',
-            #'from': ,
             'to': target_language,
             "glossaries": [
                         {                 
@@ -205,23 +188,15 @@ def upload_file():
 #@app.route('/translate', methods=['POST'])
 def translate_doc(file_path,target_language):
 
-    ##f = request.files['file']
-    ###blob_name = f.filename
-    ##
-    ##blob_name = get_timestamp_filename(f.filename) 
-    ##f.save("upload/"+blob_name)
-
     blob_name = os.path.basename(file_path)
 
     with open(file_path, "rb") as doc:
         source_container.upload_blob(blob_name, doc)
 
-    #source_container.upload_blob(blob_name, f.read())
-
 
     source_container_sas_url = generate_sas_url(source_container,blob_name)
     target_container_sas_url = generate_sas_url(target_container,blob_name)
-    glossary_container_sas_url = generate_sas_url(glossary_container, "ConfiguredGlossary.tsv")
+    glossary_container_sas_url = generate_sas_url(glossary_container, "FinalGlossary.tsv")
     print(source_container_sas_url,target_container_sas_url, glossary_container_sas_url)
     
     
@@ -256,7 +231,6 @@ def translate_doc(file_path,target_language):
       'Content-Type': 'application/json',
     }
     
-    #__import__('ipdb').set_trace()
     
     response = requests.post(constructed_url, headers=headers, json=body)
     response_headers = response.headers
